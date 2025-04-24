@@ -1,0 +1,17 @@
+{
+  "name": "google-meet-bot",
+  "version": "1.0.0",
+  "description": "A bot to join Google Meet and record audio with realtime processing",
+  "main": "join_google_meet.js",
+  "scripts": {
+    "start": "node join_google_meet.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "naudiodon": "^2.3.6",
+    "selenium-webdriver": "^4.18.1",
+    "speaker": "^0.5.5",
+    "web-audio-api": "^0.2.2",
+    "ws": "^8.16.0"
+  }
+}
