@@ -40,6 +40,12 @@ class JoinGoogleMeet {
             await this.driver.get(meetLink);
             await this.driver.sleep(2000);
 
+            await this.driver.takeScreenshot().then(
+                function (image, err) {
+                    require('fs').writeFileSync('screenshot.png', image, 'base64');
+                }
+            );
+
             await this.driver.wait(until.elementLocated(By.css('button[aria-label*="microphone"]')), 10000);
             const micButton = await this.driver.findElement(By.css('button[aria-label*="microphone"]'));
             await micButton.click();
