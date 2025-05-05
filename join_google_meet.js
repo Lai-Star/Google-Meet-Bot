@@ -11,7 +11,7 @@ class JoinGoogleMeet {
         this.meeting_active = true;
 
         // Create temporary Chrome profile
-        const tempUserDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chrome-profile-'));
+        // const tempUserDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chrome-profile-'));
 
         const options = new chrome.Options();
         options.addArguments(
@@ -21,7 +21,7 @@ class JoinGoogleMeet {
             '--disable-gpu',
             '--use-fake-ui-for-media-stream',
             '--disable-blink-features=AutomationControlled',
-            `--user-data-dir=${tempUserDataDir}`
+            '--user-data-dir=/home/ubuntu/chrome-profile'
         );
 
         // Optional: set Chrome binary path manually (uncomment if needed)
