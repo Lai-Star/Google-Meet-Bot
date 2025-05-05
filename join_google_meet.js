@@ -1,3 +1,4 @@
+const os = require('os')
 const { Builder, By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const WebSocket = require('ws');
@@ -12,11 +13,15 @@ class JoinGoogleMeet {
     constructor() {
         this.meeting_active = true;
 
+        const tempUserDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chrome-profile-'));
         // Create Chrome options
         const options = new chrome.Options();
         options.addArguments('--disable-blink-features=AutomationControlled');
         options.addArguments('--start-maximized');
         options.addArguments('--use-fake-ui-for-media-stream');
+        options.addArguments(`--user-data-dir=${tempUserDataDir}`);
+        options.addArguments('--no-sandbox');
+        options.addArguments('--disable-dev-shm-usage');
 
         // Set preferences for media permissions
         options.setUserPreferences({
@@ -31,6 +36,8 @@ class JoinGoogleMeet {
             .forBrowser('chrome')
             .setChromeOptions(options)
             .build();
+
+        this.tempUserDataDir = tempUserDataDir;
     }
 
     async checkMeetingStatus() {
