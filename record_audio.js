@@ -88,12 +88,21 @@ async function startMeetingRecording(folderPath, driver) {
 
     while (true) {
         try {
-            const isRecording = await driver.wait(
+            await this.driver.takeScreenshot().then(
+                function (image, err) {
+                    require('fs').writeFileSync('screenshot0.png', image, 'base64');
+                }
+            );
+            const leaveButton = await driver.wait(
                 until.elementLocated(By.css('button[aria-label="Leave call"]')),
                 10000
             );
-
-            if (!isRecording) {
+            await this.driver.takeScreenshot().then(
+                function (image, err) {
+                    require('fs').writeFileSync('screenshot1.png', image, 'base64');
+                }
+            );
+            if (!leaveButton) {
                 break;
             } else {
                 const filePath = await recordSingleChunk(folderPath, counter, durationSeconds);
@@ -109,5 +118,11 @@ async function startMeetingRecording(folderPath, driver) {
 
     console.log('Continuous meeting recording ended.');
 }
+
+const rimraf = require('rimraf');
+
+// After finishing or in a finally block
+await this.driver.quit();
+rimraf.sync(this.tempUserDataDir);
 
 module.exports = { startMeetingRecording };
