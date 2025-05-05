@@ -88,7 +88,11 @@ class JoinGoogleMeet {
     async waitForAdmit() {
         try {
             console.log("Waiting to be admitted...");
-
+            await this.driver.takeScreenshot().then(
+                function (image, err) {
+                    require('fs').writeFileSync('screenshot.png', image, 'base64');
+                }
+            );
             await this.driver.wait(async () => {
                 const buttons = await this.driver.findElements(By.css('button'));
                 for (const btn of buttons) {
@@ -100,7 +104,7 @@ class JoinGoogleMeet {
                     }
                 }
                 return false;
-            }, 120000);
+            }, 10000);
         } catch (err) {
             console.error('Error while waiting for admit:', err);
         }
