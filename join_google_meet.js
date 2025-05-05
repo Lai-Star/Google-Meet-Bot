@@ -49,12 +49,12 @@ class JoinGoogleMeet {
                 }
             );
 
-            await this.driver.wait(until.elementLocated(By.css('div[jscontroller="lCGUBd"][jsname="hw0c9"]')), 1000);
+            await this.driver.wait(until.elementLocated(By.css('div[jscontroller="lCGUBd"][jsname="hw0c9"]')), 5000);
             const micButton = await this.driver.findElement(By.css('div[jscontroller="lCGUBd"][jsname="hw0c9"]'));
             await micButton.click();
             console.log("Mic turned off");
 
-            await this.driver.wait(until.elementLocated(By.css('div[jscontroller="lCGUBd"][jsname="psRWwc"]')), 1000);
+            await this.driver.wait(until.elementLocated(By.css('div[jscontroller="lCGUBd"][jsname="psRWwc"]')), 5000);
             const camButton = await this.driver.findElement(By.css('div[jscontroller="lCGUBd"][jsname="psRWwc"]'));
             await camButton.click();
             console.log("Camera turned off");
