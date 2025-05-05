@@ -24,8 +24,8 @@ async function recordSingleChunk(folderPath, counter, durationSeconds) {
             const wavPath = path.join(folderPath, `meeting_record_${counter}_${timestamp}.wav`);
 
             const micInstance = mic({
-                rate: '24000',
-                channels: '1',
+                rate: '44100',
+                channels: '2',
                 bitwidth: '16',
                 encoding: 'signed-integer',
                 endian: 'little',
@@ -41,15 +41,13 @@ async function recordSingleChunk(folderPath, counter, durationSeconds) {
             outputStream.on('error', reject);
 
             micInstance.start();
-            console.log(`🎙️ Started recording chunk: ${rawPath}`);
+            console.log(`🎤 Started recording chunk: ${rawPath}`);
 
             setTimeout(() => {
                 micInstance.stop();
                 console.log(`Stopped recording. Converting to WAV...`);
 
-                // const cmd = `ffmpeg -f s16le -ar 16000 -ac 1 -i "${rawPath}" -ar 48000 "${wavPath}" -y`;
-
-                const cmd = `ffmpeg -f s16le -ar 44100 -ac 1 -i "${rawPath}" "${wavPath}" -y`;
+                const cmd = `ffmpeg -f s16le -ar 44100 -ac 2 -i "${rawPath}" "${wavPath}" -y`;
                 exec(cmd, (err, stdout, stderr) => {
                     try { fs.unlinkSync(rawPath); } catch (_) { }
 
@@ -67,10 +65,6 @@ async function recordSingleChunk(folderPath, counter, durationSeconds) {
     });
 }
 
-/**
- * @param {string} wavPath - Directory to store audio files.
- */
-
 async function uploadWavFileToServer(wavPath) {
     const form = new FormData();
     form.append('file', fs.createReadStream(wavPath));
@@ -87,27 +81,18 @@ async function uploadWavFileToServer(wavPath) {
     }
 }
 
-/**
- * Start continuous recording loop, optionally stop after N chunks.
- * @param {string} folderPath - Where to save audio chunks.
- * @param {number} durationSeconds - Duration of each chunk.
- * @param {number|null} stopCondition - Condition to stop recording.
- * @param {number|null} stopRecord - Condition to stop recording.
- * @param {WebDriver} driver - Selenium WebDriver instance.
- */
 async function startMeetingRecording(folderPath, driver) {
     fs.mkdirSync(folderPath, { recursive: true });
     let counter = 1;
-    const durationSeconds = process.env.RECORDING_DURATION
+    const durationSeconds = process.env.RECORDING_DURATION;
+
     while (true) {
         try {
             const isRecording = await driver.wait(
                 until.elementLocated(By.css('button[aria-label="Leave call"]')),
-                10000 // Wait up to 10 seconds
+                10000
             );
 
-            // Check if meeting is still active
-            // If we have a stop condition and it's met, break the loop
             if (!isRecording) {
                 break;
             } else {

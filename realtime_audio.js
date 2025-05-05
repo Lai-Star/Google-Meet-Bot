@@ -9,56 +9,49 @@ const config = {
     comp_id: "87",
     user_id: "87",
     sessid: "",
-    sample_rate: "48000"
+    sample_rate: "44100"  // Updated from 48000
 };
 
-// Create a speaker instance
+// Create a speaker instance (now stereo, 44100Hz)
 const speaker = new Speaker({
-    channels: 1,
+    channels: 2,
     bitDepth: 16,
-    // sampleRate: 24000
-    sampleRate: 48000
+    sampleRate: 44100
 });
 
-// Function to find Stereo Mix device ID
-function findStereoMixDevice() {
+// Function to find Pulse-compatible device
+function findCompatibleDevice() {
     const devices = portAudio.getDevices();
     for (let i = 0; i < devices.length; i++) {
-        if (devices[i].name.toLowerCase().includes('stereo mix') || 
-            devices[i].name.toLowerCase().includes('what you hear') ||
-            devices[i].name.toLowerCase().includes('system audio') ||
-            devices[i].name.toLowerCase().includes('audio device')) {
+        const name = devices[i].name.toLowerCase();
+        if (name.includes('pulse') || name.includes('default') || name.includes('dummyoutput')) {
             return devices[i].id;
         }
     }
-    return -1; // Return -1 if Stereo Mix is not found
+    return -1;
 }
 
 async function startRealtimeAudio() {
-    // Find Stereo Mix device
-    const stereoMixDeviceId = findStereoMixDevice();
-    if (stereoMixDeviceId === -1) {
-        throw new Error('Stereo Mix device not found. Please enable Stereo Mix in your Windows sound settings.');
+    const deviceId = findCompatibleDevice();
+    if (deviceId === -1) {
+        throw new Error('Compatible audio device not found. Ensure PulseAudio with DummyOutput is running.');
     }
 
-    // WebSocket connection
     const socket = new WebSocket("wss://api.kaisetsu-chat.com/ws/realtime");
 
-    // Audio input configuration
     const inputConfig = {
-        channelCount: 1,
+        channelCount: 2,
         sampleFormat: portAudio.SampleFormat16Bit,
-        sampleRate: 48000,
-        deviceId: stereoMixDeviceId,
+        sampleRate: 44100,
+        deviceId: deviceId,
         inOptions: {
-            channelCount: 1,
+            channelCount: 2,
             sampleFormat: portAudio.SampleFormat16Bit,
-            sampleRate: 48000,
-            deviceId: stereoMixDeviceId
+            sampleRate: 44100,
+            deviceId: deviceId
         }
     };
 
-    // Audio queue for playback
     let audioQueue = [];
     let isPlaying = false;
     let responseDone = true;
@@ -66,7 +59,6 @@ async function startRealtimeAudio() {
     let lastPlayTime;
 
     return new Promise((resolve, reject) => {
-        // WebSocket event handlers
         socket.on('open', () => {
             console.log("WebSocket connection established");
             socket.send(JSON.stringify(config));
@@ -80,21 +72,14 @@ async function startRealtimeAudio() {
                 if (response_data.type === "response_audio") {
                     console.log("response audio arrived");
 
-                    if (audioQueue.length == 0) {
+                    if (audioQueue.length === 0) {
                         responseGettingTime = Date.now();
                         lastPlayTime = null;
                     }
-                    
-                    const base64String = response_data['content'];
-                    const byteCharacters = atob(base64String);
-                    const byteArray = new Uint8Array(byteCharacters.length);
 
-                    for (let i = 0; i < byteCharacters.length; i++) {
-                        byteArray[i] = byteCharacters.charCodeAt(i);
-                    }
-
-                    const arrayBuffer = byteArray.buffer;
-                    audioQueue.push(arrayBuffer);
+                    const base64String = response_data.content;
+                    const byteArray = Buffer.from(base64String, 'base64');
+                    audioQueue.push(byteArray);
                 }
 
                 if (response_data.type === "response_text") {
@@ -118,7 +103,6 @@ async function startRealtimeAudio() {
             }
         });
 
-        // Audio handling functions
         function enqueueAudio() {
             if (!isPlaying && Date.now() - responseGettingTime > 5000) {
                 playNextAudio();
@@ -137,9 +121,7 @@ async function startRealtimeAudio() {
             }
 
             const pcmData = audioQueue.shift();
-            playPCM16(pcmData).then(() => {
-                playNextAudio();
-            }).catch((error) => {
+            playPCM16(pcmData).then(playNextAudio).catch((error) => {
                 console.error('Error playing PCM16 data:', error);
                 playNextAudio();
             });
@@ -149,47 +131,35 @@ async function startRealtimeAudio() {
             return new Promise((resolve, reject) => {
                 try {
                     console.log("speaker is working....");
-                    
-                    const buffer = Buffer.from(pcmData);
 
                     isPlaying = true;
-                    speaker.write(buffer);
-        
-                    setTimeout(() => {
-                        resolve();
-                    }, 500);
+                    speaker.write(pcmData);
 
+                    setTimeout(() => resolve(), 500);
                 } catch (error) {
                     reject(error);
                 }
             });
         }
 
-        // Setup audio input
         const audioInput = new portAudio.AudioIO({
             inOptions: inputConfig.inOptions
         });
 
-        // Handle audio input
-        if (responseGettingTime == null) {
-            audioInput.on('data', (buffer) => {
-                if (isPlaying || audioQueue.length || Date.now() - lastPlayTime < 10000) {
-                    return
-                }
-                if (socket.readyState === WebSocket.OPEN) {
-                    const base64Data = buffer.toString('base64');
-                    socket.send(base64Data);
-                }
-            });
-        }
+        audioInput.on('data', (buffer) => {
+            if (isPlaying || audioQueue.length || Date.now() - lastPlayTime < 10000) {
+                return;
+            }
+            if (socket.readyState === WebSocket.OPEN) {
+                const base64Data = buffer.toString('base64');
+                socket.send(base64Data);
+            }
+        });
 
-        // Start audio input
         audioInput.start();
 
-        // Start speaker
         setInterval(enqueueAudio, 1000);
 
-        // Error handling
         socket.on('error', (error) => {
             console.error('WebSocket Error:', error);
             reject(error);
@@ -200,7 +170,6 @@ async function startRealtimeAudio() {
             audioInput.quit();
         });
 
-        // Handle process termination
         process.on('SIGINT', () => {
             console.log('\nClosing application...');
             socket.close();
@@ -210,5 +179,4 @@ async function startRealtimeAudio() {
     });
 }
 
-// Export the function for use in other files
-module.exports = { startRealtimeAudio }; 
+module.exports = { startRealtimeAudio };
