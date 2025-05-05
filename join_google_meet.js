@@ -54,7 +54,7 @@ class JoinGoogleMeet {
             await micButton.click();
             console.log("Mic turned off");
 
-            await this.driver.wait(until.elementLocated(By.css('div[jscontroller="lCGUBd"][jsname="psRWwc"]')), 5000);
+            await this.driver.wait(until.elementLocated(By.css('div[jscontroller="lCGUBd"][jsname="psRWwc"]')), 15000);
             const camButton = await this.driver.findElement(By.css('div[jscontroller="lCGUBd"][jsname="psRWwc"]'));
             await camButton.click();
             console.log("Camera turned off");
