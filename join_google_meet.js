@@ -47,6 +47,12 @@ class JoinGoogleMeet {
                 }
             );
 
+            const allowNotificationsButton = await this.driver.wait(
+                until.elementLocated(By.xpath("//span[contains(text(),'Allow notifications')]")),
+                10000 // Timeout of 10 seconds
+            );
+            await allowNotificationsButton.click();
+
             await this.driver.wait(until.elementLocated(By.css('button[aria-label*="microphone"]')), 20000);
             const micButton = await this.driver.findElement(By.css('button[aria-label*="microphone"]'));
             await micButton.click();
