@@ -99,7 +99,7 @@ class JoinGoogleMeet {
                     5000
                 );
 
-                await this.driver.executeScript("arguments[0].scrollIntoView(true);", dismissButton);
+                await this.driver.executeScript("arguments[0].click();", dismissButton);
                 await dismissButton.click();
                 console.log("Dismissed camera error popup");
             } catch (e) {
