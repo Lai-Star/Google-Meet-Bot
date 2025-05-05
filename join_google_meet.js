@@ -98,11 +98,6 @@ class JoinGoogleMeet {
                     until.elementLocated(By.xpath('//button[.//span[text()="Dismiss"]]')),
                     5000
                 );
-                await this.driver.takeScreenshot().then(
-                    function (image, err) {
-                        require('fs').writeFileSync('screenshot1.png', image, 'base64');
-                    }
-                );
 
                 await this.driver.executeScript("arguments[0].scrollIntoView(true);", dismissButton);
                 await dismissButton.click();
