@@ -26,7 +26,7 @@ app.post('/api/join-meet', async (req, res) => {
         // Optionally, you can start recording or other actions here
         res.status(200).json({ message: 'Successfully joined the Google Meet.' });
 
-        startRealtimeAudio();
+        // startRealtimeAudio();
 
         startMeetingRecording('audio_chunks', driver);
     } catch (error) {
