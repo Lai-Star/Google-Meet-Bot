@@ -11,7 +11,7 @@ const PORT = 3000;
 // Middleware to parse JSON data
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(bodyParser.json());
 // POST endpoint to join a Google Meet link
 app.post('/api/join-meet', async (req, res) => {
     const { meetLink } = req.body;
