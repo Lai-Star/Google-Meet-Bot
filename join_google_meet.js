@@ -38,6 +38,7 @@ class JoinGoogleMeet {
     async turnOffMicCam(meetLink) {
         try {
             await this.driver.get(meetLink);
+            console.log(meetLink)
             await this.driver.sleep(2000);
 
             await this.driver.takeScreenshot().then(
