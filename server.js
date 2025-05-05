@@ -9,6 +9,7 @@ const { startMeetingRecording } = require('./record_audio');
 const PORT = 3000;
 
 // Middleware to parse JSON data
+app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // POST endpoint to join a Google Meet link
