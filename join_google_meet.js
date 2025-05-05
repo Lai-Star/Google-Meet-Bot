@@ -49,18 +49,6 @@ class JoinGoogleMeet {
                 }
             );
 
-            const allowNotificationsButton = await this.driver.wait(
-                until.elementLocated(By.css('button[aria-label*="Allow notifications"]')),
-                10000 // Timeout of 10 seconds
-            );
-
-            await allowNotificationsButton.click();
-            await this.driver.takeScreenshot().then(
-                function (image, err) {
-                    require('fs').writeFileSync('screenshot1.png', image, 'base64');
-                }
-            );
-
             await this.driver.wait(until.elementLocated(By.css('button[aria-label*="microphone"]')), 20000);
             const micButton = await this.driver.findElement(By.css('button[aria-label*="microphone"]'));
             await micButton.click();
