@@ -68,9 +68,9 @@ class JoinGoogleMeet {
         try {
             await this.driver.sleep(5000);
             // await this.driver.wait(until.elementLocated(By.css('input[jsname="YPqjbf"]')), 5000);
-            const nameInput = await this.driver.findElement(By.css('input[jsname="YPqjbf"]'));
-            await nameInput.sendKeys("Meeting Bot");
-            await this.driver.sleep(2000);
+            // const nameInput = await this.driver.findElement(By.css('input[jsname="YPqjbf"]'));
+            // await nameInput.sendKeys("Meeting Bot");
+            // await this.driver.sleep(2000);
 
             await this.driver.wait(until.elementLocated(By.css('div[jsname="Qx7uuf"]')), 5000);
             const joinButton = await this.driver.findElement(By.css('div[jsname="Qx7uuf"]'));
