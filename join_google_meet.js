@@ -88,20 +88,19 @@ class JoinGoogleMeet {
     async waitForAdmit() {
         try {
             console.log("Waiting to be admitted...");
-            await this.driver.wait(until.elementLocated(By.css('div[jsname="Qx7uuf"]')), 5000);
-            const joinButton = await this.driver.findElement(By.css('div[jsname="Qx7uuf"]'));
 
-            let admitted = false;
-            while (!admitted) {
-                const buttonText = await joinButton.getText();
-                if (buttonText === "Join") {
-                    admitted = true;
-                    console.log("Admitted to the meeting");
-                    await joinButton.click();
-                } else {
-                    await this.driver.sleep(2000);
+            await this.driver.wait(async () => {
+                const buttons = await this.driver.findElements(By.css('button'));
+                for (const btn of buttons) {
+                    const text = await btn.getText();
+                    if (text === "Join now" || text === "Join") {
+                        await btn.click();
+                        console.log("Admitted to the meeting");
+                        return true;
+                    }
                 }
-            }
+                return false;
+            }, 120000);
         } catch (err) {
             console.error('Error while waiting for admit:', err);
         }
