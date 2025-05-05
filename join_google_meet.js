@@ -15,7 +15,7 @@ class JoinGoogleMeet {
 
         const options = new chrome.Options();
         options.addArguments(
-            '--headless=new',                  // Required for EC2 headless
+            // '--headless=new',                  // Required for EC2 headless
             '--no-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu',
