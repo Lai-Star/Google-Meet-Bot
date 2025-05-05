@@ -56,7 +56,7 @@ class JoinGoogleMeet {
 
             await this.driver.wait(until.elementLocated(By.css('div[jscontroller="lCGUBd"][jsname="psRWwc"]')), 15000);
             const camButton = await this.driver.findElement(By.css('div[jscontroller="lCGUBd"][jsname="psRWwc"]'));
-            await camButton.click();
+            await this.driver.executeScript("arguments[0].click();", camButton);
             console.log("Camera turned off");
         } catch (error) {
             console.error('Error in turnOffMicCam:', error);
