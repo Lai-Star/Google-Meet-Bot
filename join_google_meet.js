@@ -4,6 +4,7 @@ const chrome = require('selenium-webdriver/chrome');
 const WebSocket = require('ws');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 require('dotenv').config();
 const { startRealtimeAudio } = require('./realtime_audio');
 const { startMeetingRecording } = require('./record_audio');
@@ -13,13 +14,14 @@ class JoinGoogleMeet {
     constructor() {
         this.meeting_active = true;
 
-        const tempUserDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chrome-profile-'));
+        execSync('pkill chrome || true');
+        this.tempUserDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chrome-profile-'));
         // Create Chrome options
         const options = new chrome.Options();
         options.addArguments('--disable-blink-features=AutomationControlled');
         options.addArguments('--start-maximized');
         options.addArguments('--use-fake-ui-for-media-stream');
-        options.addArguments(`--user-data-dir=${tempUserDataDir}`);
+        options.addArguments(`--user-data-dir=${this.tempUserDataDir}`);
         options.addArguments('--no-sandbox');
         options.addArguments('--disable-dev-shm-usage');
 
@@ -36,8 +38,6 @@ class JoinGoogleMeet {
             .forBrowser('chrome')
             .setChromeOptions(options)
             .build();
-
-        this.tempUserDataDir = tempUserDataDir;
     }
 
     async checkMeetingStatus() {
