@@ -119,10 +119,4 @@ async function startMeetingRecording(folderPath, driver) {
     console.log('Continuous meeting recording ended.');
 }
 
-const rimraf = require('rimraf');
-
-// After finishing or in a finally block
-await this.driver.quit();
-rimraf.sync(this.tempUserDataDir);
-
 module.exports = { startMeetingRecording };
