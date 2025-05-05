@@ -95,7 +95,7 @@ class JoinGoogleMeet {
             );
             try {
                 const dismissButton = await this.driver.wait(
-                    until.elementLocated(By.xpath('//button[contains(., "Dismiss")]')),
+                    until.elementLocated(By.xpath('//button[.//span[text()="Dismiss"]]')),
                     5000
                 );
                 await this.driver.takeScreenshot().then(
