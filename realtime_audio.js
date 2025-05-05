@@ -16,7 +16,8 @@ const config = {
 const speaker = new Speaker({
     channels: 1,
     bitDepth: 16,
-    sampleRate: 24000
+    // sampleRate: 24000
+    sampleRate: 48000
 });
 
 // Function to find Stereo Mix device ID
@@ -61,8 +62,8 @@ async function startRealtimeAudio() {
     let audioQueue = [];
     let isPlaying = false;
     let responseDone = true;
-    let defaultTime = new Date();
-    let compareTime = 60 * 1000;
+    let responseGettingTime;
+    let lastPlayTime;
 
     return new Promise((resolve, reject) => {
         // WebSocket event handlers
@@ -75,10 +76,14 @@ async function startRealtimeAudio() {
         socket.on('message', (data) => {
             try {
                 const response_data = JSON.parse(data);
-                let gettingTime = new Date();
 
                 if (response_data.type === "response_audio") {
                     console.log("response audio arrived");
+
+                    if (audioQueue.length == 0) {
+                        responseGettingTime = Date.now();
+                        lastPlayTime = null;
+                    }
                     
                     const base64String = response_data['content'];
                     const byteCharacters = atob(base64String);
@@ -89,7 +94,7 @@ async function startRealtimeAudio() {
                     }
 
                     const arrayBuffer = byteArray.buffer;
-                    enqueueAudio(arrayBuffer);
+                    audioQueue.push(arrayBuffer);
                 }
 
                 if (response_data.type === "response_text") {
@@ -114,21 +119,21 @@ async function startRealtimeAudio() {
         });
 
         // Audio handling functions
-        function enqueueAudio(buffer) {
-            audioQueue.push(buffer);
-            if (!isPlaying) {
+        function enqueueAudio() {
+            if (!isPlaying && Date.now() - responseGettingTime > 5000) {
                 playNextAudio();
             }
         }
 
         function playNextAudio() {
             if (audioQueue.length === 0) {
-                // setTimeout(() => {
-                //     if (audioQueue.length === 0) {
-                //         // isPlaying = false;
-                        return;
-                //     }
-                // }, 3000);
+                responseGettingTime = null;
+                isPlaying = false;
+                return;
+            }
+
+            if (audioQueue.length === 1) {
+                lastPlayTime = Date.now();
             }
 
             const pcmData = audioQueue.shift();
@@ -148,20 +153,11 @@ async function startRealtimeAudio() {
                     const buffer = Buffer.from(pcmData);
 
                     isPlaying = true;
-                    const onAudioEnd = () => {
-                        isPlaying = false;
-                        // audioQueue.shift();
+                    speaker.write(buffer);
         
-                        // setTimeout(() => {
+                    setTimeout(() => {
                         resolve();
-                        // }, 3000);
-                    };
-
-                    if (!speaker.write(buffer)) {
-                        speaker.once('drain', onAudioEnd);
-                    } else {
-                        onAudioEnd();
-                    }
+                    }, 500);
 
                 } catch (error) {
                     reject(error);
@@ -175,18 +171,23 @@ async function startRealtimeAudio() {
         });
 
         // Handle audio input
-        audioInput.on('data', (buffer) => {
-            if (isPlaying && audioQueue.length) {
-                return
-            }
-            if (socket.readyState === WebSocket.OPEN) {
-                const base64Data = buffer.toString('base64');
-                socket.send(base64Data);
-            }
-        });
+        if (responseGettingTime == null) {
+            audioInput.on('data', (buffer) => {
+                if (isPlaying || audioQueue.length || Date.now() - lastPlayTime < 10000) {
+                    return
+                }
+                if (socket.readyState === WebSocket.OPEN) {
+                    const base64Data = buffer.toString('base64');
+                    socket.send(base64Data);
+                }
+            });
+        }
 
         // Start audio input
         audioInput.start();
+
+        // Start speaker
+        setInterval(enqueueAudio, 1000);
 
         // Error handling
         socket.on('error', (error) => {

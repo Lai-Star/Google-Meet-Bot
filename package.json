@@ -4,13 +4,22 @@
   "description": "A bot to join Google Meet and record audio with realtime processing",
   "main": "join_google_meet.js",
   "scripts": {
-    "start": "node join_google_meet.js"
+    "start": "node join_google_meet.js",
+    "server": "node server.js"
   },
   "dependencies": {
+    "axios": "^1.9.0",
+    "body-parser": "^2.2.0",
     "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "form-data": "^4.0.2",
+    "mic": "^2.1.2",
+    "mkdirp": "^3.0.1",
     "naudiodon": "^2.3.6",
+    "node-record-lpcm16": "^1.0.1",
     "selenium-webdriver": "^4.18.1",
     "speaker": "^0.5.5",
+    "wav": "^1.0.2",
     "web-audio-api": "^0.2.2",
     "ws": "^8.16.0"
   }

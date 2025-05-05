@@ -5,17 +5,19 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 const { startRealtimeAudio } = require('./realtime_audio');
+const { startMeetingRecording } = require('./record_audio');
+let stop = false
 
 class JoinGoogleMeet {
     constructor() {
         this.meeting_active = true;
-        
+
         // Create Chrome options
         const options = new chrome.Options();
         options.addArguments('--disable-blink-features=AutomationControlled');
         options.addArguments('--start-maximized');
         options.addArguments('--use-fake-ui-for-media-stream');
-        
+
         // Set preferences for media permissions
         options.setUserPreferences({
             "profile.default_content_setting_values.media_stream_mic": 1,
@@ -80,6 +82,7 @@ class JoinGoogleMeet {
 
     async AskToJoin() {
         try {
+            const duration = parseInt(process.env.RECORDING_DURATION || "5");
             // Wait before joining
             await this.driver.sleep(5000);
 
@@ -93,10 +96,45 @@ class JoinGoogleMeet {
             await joinButton.click();
             console.log("Ask to join activity: Done");
 
-            await startRealtimeAudio();
+            return this.driver;
         } catch (error) {
             console.error('Error in AskToJoin:', error);
             throw error;
+        }
+    }
+
+    async waitForAdmit() {
+        try {
+            // Wait for the "Ask to Join" request to be sent and for the "Join" button to change
+            console.log('Waiting for the meeting creator to admit...');
+
+            // This assumes the 'Join' button will either disappear or change after admission.
+            const joinButton = await this.driver.wait(
+                until.elementLocated(By.css('button[aria-label="Ask to join"]')),
+                15000 // Wait up to 30 seconds for the button
+            );
+
+            // Polling for change in the button's state (from "Ask to join" to "Join" or something else)
+            let admitted = false;
+            while (!admitted) {
+                const buttonText = await joinButton.getText();
+
+                if (buttonText === "Join") {
+                    // If the button text is "Join", the meeting creator has admitted you
+                    admitted = true;
+                    console.log('You have been admitted to the meeting!');
+                } else {
+                    // Otherwise, wait for a while and check again
+                    await this.driver.sleep(2000); // Sleep for 2 seconds before checking again
+                }
+            }
+
+            // Proceed with joining the meeting once admitted
+            // Example: Click "Join" button (if applicable)
+            await joinButton.click();
+
+        } catch (err) {
+            console.error('Error while waiting for admit:', err);
         }
     }
 }
@@ -112,7 +150,12 @@ async function main() {
 
         const meet = new JoinGoogleMeet();
         await meet.turnOffMicCam(meetLink);
-        await meet.AskToJoin();
+        const driver = await meet.AskToJoin();
+
+        await meet.waitForAdmit();
+        console.log("Waiting for admit activity: Done");
+
+        await startMeetingRecording('audio_chunks', duration, false, driver);
     } catch (error) {
         console.error('Error in main:', error);
         process.exit(1);
