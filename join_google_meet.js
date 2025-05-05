@@ -32,7 +32,7 @@ class JoinGoogleMeet {
             .setChromeOptions(options)
             .build();
 
-        this.tempUserDataDir = tempUserDataDir;
+        // this.tempUserDataDir = tempUserDataDir;
     }
 
     async turnOffMicCam(meetLink) {
