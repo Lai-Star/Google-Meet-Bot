@@ -21,6 +21,7 @@ class JoinGoogleMeet {
             '--disable-gpu',
             '--use-fake-ui-for-media-stream',
             '--disable-blink-features=AutomationControlled',
+            '--disable-notifications',
             '--user-data-dir=/home/ubuntu/chrome-profile'
         );
 
