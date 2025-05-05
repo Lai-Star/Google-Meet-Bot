@@ -95,9 +95,16 @@ class JoinGoogleMeet {
             );
             try {
                 const dismissButton = await this.driver.wait(
-                    until.elementLocated(By.xpath('//button[text()="Dismiss"]')),
+                    until.elementLocated(By.xpath('//button[contains(., "Dismiss")]')),
                     5000
                 );
+                await this.driver.takeScreenshot().then(
+                    function (image, err) {
+                        require('fs').writeFileSync('screenshot1.png', image, 'base64');
+                    }
+                );
+
+                await this.driver.executeScript("arguments[0].scrollIntoView(true);", dismissButton);
                 await dismissButton.click();
                 console.log("Dismissed camera error popup");
             } catch (e) {
