@@ -40,7 +40,7 @@ class JoinGoogleMeet {
         try {
             await this.driver.get(meetLink);
             console.log(meetLink)
-            await this.driver.sleep(2000);
+            await this.driver.sleep(10000);
 
 
             await this.driver.takeScreenshot().then(
@@ -49,13 +49,13 @@ class JoinGoogleMeet {
                 }
             );
 
-            await this.driver.wait(until.elementLocated(By.css('button[aria-label*="microphone"]')), 20000);
-            const micButton = await this.driver.findElement(By.css('button[aria-label*="microphone"]'));
+            await this.driver.wait(until.elementLocated(By.css('div[jscontroller="lCGUBd"][jsname="hw0c9"]')), 1000);
+            const micButton = await this.driver.findElement(By.css('div[jscontroller="lCGUBd"][jsname="hw0c9"]'));
             await micButton.click();
             console.log("Mic turned off");
 
-            await this.driver.wait(until.elementLocated(By.css('button[aria-label*="camera"]')), 20000);
-            const camButton = await this.driver.findElement(By.css('button[aria-label*="camera"]'));
+            await this.driver.wait(until.elementLocated(By.css('div[jscontroller="lCGUBd"][jsname="psRWwc"]')), 1000);
+            const camButton = await this.driver.findElement(By.css('div[jscontroller="lCGUBd"][jsname="psRWwc"]'));
             await camButton.click();
             console.log("Camera turned off");
         } catch (error) {
