@@ -88,7 +88,7 @@ async function startMeetingRecording(folderPath, driver) {
 
     while (true) {
         try {
-            await this.driver.takeScreenshot().then(
+            await driver.takeScreenshot().then(
                 function (image, err) {
                     require('fs').writeFileSync('screenshot0.png', image, 'base64');
                 }
@@ -97,7 +97,7 @@ async function startMeetingRecording(folderPath, driver) {
                 until.elementLocated(By.css('button[aria-label="Leave call"]')),
                 10000
             );
-            await this.driver.takeScreenshot().then(
+            await driver.takeScreenshot().then(
                 function (image, err) {
                     require('fs').writeFileSync('screenshot1.png', image, 'base64');
                 }
