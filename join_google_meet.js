@@ -66,12 +66,17 @@ class JoinGoogleMeet {
 
     async AskToJoin() {
         try {
-            await this.driver.sleep(5000);
+            await this.driver.sleep(5000);  // Wait to make sure the page loads
 
+            // Wait for the name input field to be located and available
+            await this.driver.wait(until.elementLocated(By.css('input[jsname="YPqjbf"]')), 15000);
             const nameInput = await this.driver.findElement(By.css('input[jsname="YPqjbf"]'));
             await nameInput.sendKeys("Meeting Bot");
+
             await this.driver.sleep(2000);
 
+            // Wait for the "Join" button to be clickable
+            await this.driver.wait(until.elementIsClickable(By.css('div[jsname="Qx7uuf"]')), 15000);
             const joinButton = await this.driver.findElement(By.css('div[jsname="Qx7uuf"]'));
             await joinButton.click();
             console.log("Asked to join");
