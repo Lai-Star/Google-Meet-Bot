@@ -74,7 +74,8 @@ class JoinGoogleMeet {
 
             await this.driver.wait(until.elementLocated(By.css('div[jsname="Qx7uuf"]')), 5000);
             const joinButton = await this.driver.findElement(By.css('div[jsname="Qx7uuf"]'));
-            await joinButton.click();
+            await this.driver.executeScript("arguments[0].click();", joinButton);
+            // await joinButton.click();
             console.log("Asked to join");
 
             return this.driver;
